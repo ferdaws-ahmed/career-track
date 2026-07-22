@@ -14,7 +14,23 @@ dotenv.config();
 const app = express();
 
 // Global Middlewares
-app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://career-track-omega.vercel.app',
+  process.env.CLIENT_URL
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // Database Connect
