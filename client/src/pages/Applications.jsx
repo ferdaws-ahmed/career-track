@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios'; // Import our centralized Axios instance!
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2, Search, Filter, Loader2, ExternalLink } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Filter, ExternalLink, Calendar, MapPin, Briefcase } from 'lucide-react';
 import ApplicationModal from '../components/ApplicationModal';
+import { Skeleton } from '../components/Skeleton';
 
 const Applications = () => {
   const [applications, setApplications] = useState([]);
@@ -69,13 +70,26 @@ const Applications = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+  // Skeleton loader for application cards
+  const ApplicationCardSkeleton = () => (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <Skeleton className="h-6 w-20 rounded-full" />
       </div>
-    );
-  }
+      <div className="space-y-2 mb-4">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-4 w-24" />
+      </div>
+      <div className="flex space-x-3 pt-4 border-t">
+        <Skeleton className="h-10 flex-1 rounded-lg" />
+        <Skeleton className="h-10 flex-1 rounded-lg" />
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -87,13 +101,13 @@ const Applications = () => {
           </div>
           <button
             onClick={handleAdd}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-semibold hover:shadow-lg hover:shadow-blue-200 transition-all"
           >
             <Plus className="h-5 w-5" />
             <span>Add New</span>
           </button>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border mb-8">
+        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -103,16 +117,16 @@ const Applications = () => {
                   placeholder="Search by company or job title..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <Filter className="h-5 w-5 text-gray-400" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Status</option>
                 <option>Saved</option>
@@ -125,7 +139,7 @@ const Applications = () => {
               <select
                 value={sourceFilter}
                 onChange={(e) => setSourceFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All Sources</option>
                 <option>LinkedIn</option>
@@ -136,28 +150,41 @@ const Applications = () => {
             </div>
           </div>
         </div>
-        {filteredApplications.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array(6).fill(0).map((_, i) => <ApplicationCardSkeleton key={i} />)}
+          </div>
+        ) : filteredApplications.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredApplications.map((app) => (
-              <div key={app._id} className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
+              <div key={app._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="font-semibold text-lg text-gray-900">{app.jobTitle}</h3>
-                    <p className="text-gray-600">{app.companyName}</p>
+                    <p className="text-gray-600 flex items-center mt-1">
+                      <Briefcase className="h-4 w-4 mr-1" />
+                      {app.companyName}
+                    </p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(app.status)}`}>
+                  <span className={`px-4 py-1.5 rounded-full text-xs font-semibold ${getStatusBadgeColor(app.status)}`}>
                     {app.status}
                   </span>
                 </div>
                 <div className="space-y-2 text-sm text-gray-500 mb-4">
-                  <p>📅 {new Date(app.applicationDate).toLocaleDateString()}</p>
-                  <p>📍 {app.source}</p>
+                  <p className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    {new Date(app.applicationDate).toLocaleDateString()}
+                  </p>
+                  <p className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    {app.source}
+                  </p>
                   {app.jobUrl && (
                     <a
                       href={app.jobUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
+                      className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 font-medium"
                     >
                       <ExternalLink className="h-4 w-4" />
                       <span>View Job</span>
@@ -165,19 +192,19 @@ const Applications = () => {
                   )}
                 </div>
                 {app.notes && (
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{app.notes}</p>
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-2 bg-gray-50 p-3 rounded-xl">{app.notes}</p>
                 )}
-                <div className="flex space-x-3 pt-4 border-t">
+                <div className="flex space-x-3 pt-4 border-t border-gray-100">
                   <button
                     onClick={() => handleEdit(app)}
-                    className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 flex-1 justify-center py-2"
+                    className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 flex-1 justify-center py-2.5 rounded-xl transition-colors font-medium"
                   >
                     <Edit className="h-4 w-4" />
                     <span>Edit</span>
                   </button>
                   <button
                     onClick={() => handleDelete(app._id)}
-                    className="flex items-center space-x-1 text-red-600 hover:text-red-700 flex-1 justify-center py-2"
+                    className="flex items-center space-x-1 text-red-600 hover:text-red-700 hover:bg-red-50 flex-1 justify-center py-2.5 rounded-xl transition-colors font-medium"
                   >
                     <Trash2 className="h-4 w-4" />
                     <span>Delete</span>
@@ -187,7 +214,7 @@ const Applications = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-xl shadow-sm border">
+          <div className="text-center py-16 bg-white rounded-2xl shadow-lg border border-gray-100">
             <p className="text-gray-500 text-lg">No applications found</p>
             <button
               onClick={handleAdd}

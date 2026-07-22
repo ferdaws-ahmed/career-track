@@ -28,6 +28,7 @@ const register = async (req, res, next) => {
       name,
       email,
       passwordHash,
+      profilePicture: '',
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -38,7 +39,7 @@ const register = async (req, res, next) => {
     res.status(201).json({
       success: true,
       token,
-      user: { id: result.insertedId, name, email }
+      user: { id: result.insertedId, name, email, profilePicture: '' }
     });
   } catch (err) {
     next(err);
@@ -74,7 +75,7 @@ const login = async (req, res, next) => {
     res.status(200).json({
       success: true,
       token,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture || '' }
     });
   } catch (err) {
     next(err);
@@ -101,8 +102,61 @@ const getMe = async (req, res, next) => {
   }
 };
 
+// Update User Profile
+const updateProfile = async (req, res, next) => {
+  try {
+    const { name, profilePicture, currentPassword, newPassword } = req.body;
+    const db = getDB();
+    const usersCollection = db.collection('users');
+
+    // Get current user
+    const user = await usersCollection.findOne({ _id: new ObjectId(req.user.id) });
+    if (!user) {
+      res.status(404);
+      return next(new Error('User not found!'));
+    }
+
+    const updateData = {
+      updatedAt: new Date()
+    };
+
+    if (name) updateData.name = name;
+    if (profilePicture !== undefined) updateData.profilePicture = profilePicture;
+
+    // If updating password
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isMatch) {
+        res.status(400);
+        return next(new Error('Current password is incorrect!'));
+      }
+      const salt = await bcrypt.genSalt(10);
+      updateData.passwordHash = await bcrypt.hash(newPassword, salt);
+    } else if (currentPassword || newPassword) {
+      // If only one is provided
+      res.status(400);
+      return next(new Error('Please provide both current and new password to change password!'));
+    }
+
+    // Update user
+    const result = await usersCollection.findOneAndUpdate(
+      { _id: new ObjectId(req.user.id) },
+      { $set: updateData },
+      { returnDocument: 'after', projection: { passwordHash: 0 } }
+    );
+
+    res.status(200).json({
+      success: true,
+      user: result.value
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   register,
   login,
-  getMe
+  getMe,
+  updateProfile
 };
