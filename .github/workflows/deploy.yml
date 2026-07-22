@@ -1,47 +1,40 @@
-name: CareerTrack Manual CI/CD Pipeline
+name: Deploy Client to Vercel
 
 on:
-  workflow_dispatch: # For Run manually in GitHub UI 
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  # ১. Render Backend Deploy
-  deploy-backend:
-    name: Deploy Backend to Render
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render Deploy Hook
-        run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
-
-  # ২. Vercel Frontend Deploy (Monorepo)
-  deploy-frontend:
-    name: Deploy Client to Vercel
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./client # it's means for client file
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - name: Install Frontend Dependencies
-        run: npm ci
+          node-version: 20
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+  
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./client
 
+    
       - name: Build Project Artifacts
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }} 
+          VITE_API_URL: https://career-track-9jjt.onrender.com/api
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./client
 
+      
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: ./client
