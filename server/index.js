@@ -2,9 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { connectDB } = require('./config/db');
+// 🔴 ভুল ছিল: '../middleware/errorHandler' -> ✅ সঠিক: './middleware/errorHandler'
 const errorHandler = require('./middleware/errorHandler');
 
 // Module Routes Import
+// 🔴 ভুল ছিল: '../modules/auth/auth.routes' -> ✅ সঠিক: './modules/auth/auth.routes'
 const authRoutes = require('./modules/auth/auth.routes');
 const applicationRoutes = require('./modules/application/application.routes');
 
