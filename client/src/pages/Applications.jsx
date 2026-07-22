@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios'; // Import our centralized Axios instance!
 import toast from 'react-hot-toast';
 import { Plus, Edit, Trash2, Search, Filter, Loader2, ExternalLink } from 'lucide-react';
 import ApplicationModal from '../components/ApplicationModal';
@@ -24,7 +24,7 @@ const Applications = () => {
       if (statusFilter) params.status = statusFilter;
       if (sourceFilter) params.source = sourceFilter;
       
-      const res = await axios.get(`${API_URL}/applications`, { params });
+      const res = await api.get('/applications', { params }); // Use our api instance!
       setApplications(res.data.applications);
       setFilteredApplications(res.data.applications);
     } catch (err) {
@@ -41,7 +41,7 @@ const Applications = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this application?')) {
       try {
-        await axios.delete(`${API_URL}/applications/${id}`);
+        await api.delete(`/applications/${id}`); // Use our api instance!
         toast.success('Application deleted successfully');
         fetchApplications();
       } catch (err) {

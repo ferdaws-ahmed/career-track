@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios'; // Import our centralized Axios instance!
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const ApplicationModal = ({ isOpen, onClose, application, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -50,10 +48,10 @@ const ApplicationModal = ({ isOpen, onClose, application, onSuccess }) => {
     setLoading(true);
     try {
       if (application) {
-        await axios.patch(`${API_URL}/applications/${application._id}`, formData);
+        await api.patch(`/applications/${application._id}`, formData); // Use our api instance!
         toast.success('Application updated successfully!');
       } else {
-        await axios.post(`${API_URL}/applications`, formData);
+        await api.post('/applications', formData); // Use our api instance!
         toast.success('Application added successfully!');
       }
       onSuccess();

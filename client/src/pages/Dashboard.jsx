@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios'; // Import our centralized Axios instance!
 import { useAuth } from '../context/AuthContext';
 import { Loader2, Briefcase, Bookmark, Send, ClipboardList, MessageSquare, XCircle, Award } from 'lucide-react';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -13,7 +11,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get(`${API_URL}/applications/dashboard/stats`);
+        const res = await api.get('/applications/dashboard/stats'); // Use our api instance!
         setStats(res.data.stats);
       } catch (err) {
         console.error('Failed to fetch stats:', err);
