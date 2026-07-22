@@ -4,8 +4,6 @@ import toast from 'react-hot-toast';
 import { Plus, Edit, Trash2, Search, Filter, Loader2, ExternalLink } from 'lucide-react';
 import ApplicationModal from '../components/ApplicationModal';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
 const Applications = () => {
   const [applications, setApplications] = useState([]);
   const [filteredApplications, setFilteredApplications] = useState([]);

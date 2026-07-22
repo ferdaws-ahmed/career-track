@@ -1,49 +1,38 @@
 import axios from 'axios';
 
-// 🔹 Step 1: Determine the base URL with a robust fallback
-const getBaseURL = () => {
-  // Check if environment variable exists
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  // If no env var, use production URL as fallback
-  return 'https://career-track-9jjt.onrender.com/api';
-};
+// For debugging (log base url to check if it's set correctly
+console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
 
-// 🔹 Step 2: Create an Axios instance with the base URL
+// Correct base URL setup
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://career-track-9jjt.onrender.com/api';
+
+console.log('Using Base URL:', BASE_URL);
+
 const api = axios.create({
-  baseURL: getBaseURL(),
-  timeout: 15000, // 15-second timeout (prevents hanging requests)
+  baseURL: BASE_URL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// 🔹 Step 3: Add Request Interceptor (auto-adds auth token)
+// Request Interceptor
 api.interceptors.request.use(
   (config) => {
-    // Get token from localStorage if it exists
+    console.log('Requesting to:', config.baseURL + config.url);
     const token = localStorage.getItem('token');
     if (token) {
-      // Add token to request headers
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    // Handle request errors
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// 🔹 Step 4: Add Response Interceptor (handles auth errors)
+// Response Interceptor
 api.interceptors.response.use(
-  (response) => {
-    // Return successful responses
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // If 401 Unauthorized, log out the user
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';

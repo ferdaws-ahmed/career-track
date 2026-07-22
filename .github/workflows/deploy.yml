@@ -1,7 +1,7 @@
 name: CareerTrack Manual CI/CD Pipeline
 
 on:
-  workflow_dispatch: # For Run manually in GitHub UI 
+  workflow_dispatch: 
 
 jobs:
   # ১. Render Backend Deploy
@@ -19,15 +19,15 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./client # it's means for client file
+        working-directory: ./client
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Frontend Dependencies
         run: npm ci
@@ -40,8 +40,11 @@ jobs:
 
       - name: Build Project Artifacts
         env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }} 
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          # Explicitly set the VITE_API_URL here to ensure it's available at build time
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: |
+          echo "VITE_API_URL set to: $VITE_API_URL"
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
