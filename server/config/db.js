@@ -1,8 +1,8 @@
-const {monoClient} = require("mongodb");
+const {MongoClient} = require("mongodb");
 const dotenv =  require("dotenv");
 dotenv.config();
 
- const client = new mongoClient(process.env.MONGO_URI);
+ const client = new MongoClient(process.env.MONGO_URI);
 
  let db; 
 
@@ -25,9 +25,11 @@ dotenv.config();
  const getDB = () => {
   if(!db){
     throw new Error("Database not connected. Call connectDB first")
-    return db;
+   
   }
+   return db;
  }
 
 
- exports = {connectDB, getDB};
+ module.exports = {connectDB, getDB};
+ 
